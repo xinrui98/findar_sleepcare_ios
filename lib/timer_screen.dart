@@ -1,12 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
 //import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:math' as math;
 import 'main.dart';
 import 'music_repo.dart';
 import 'package:flutter_duration_picker/flutter_duration_picker.dart';
-
 
 class TimerScreen extends StatefulWidget {
   @override
@@ -29,6 +29,18 @@ class TimerScreenState extends State<TimerScreen>
   String get timerString {
     duration = controller.duration * controller.value;
     return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+  }
+
+  int getCurrentMusicPosition() {
+    for (int i = 0; i < musicList.length; i++) {
+      if (Home.currentMusic != null) {
+        if (Home.currentMusic.title == musicList[i].title) {
+          return i;
+        }
+      } else {
+        return 0;
+      }
+    }
   }
 
   @override
@@ -102,11 +114,11 @@ class TimerScreenState extends State<TimerScreen>
             filter: ImageFilter.blur(sigmaY: 10, sigmaX: 10),
             child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [Color(0x50000000), Color(0xA0000000)],
-                      begin: FractionalOffset.topLeft,
-                      end: FractionalOffset.bottomRight),
-                )),
+              gradient: LinearGradient(
+                  colors: [Color(0x50000000), Color(0xA0000000)],
+                  begin: FractionalOffset.topLeft,
+                  end: FractionalOffset.bottomRight),
+            )),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -141,10 +153,10 @@ class TimerScreenState extends State<TimerScreen>
                               builder: (BuildContext context, Widget child) {
                                 return CustomPaint(
                                     painter: TimerPainter(
-                                      animation: controller,
-                                      backgroundColor: Colors.white,
-                                      color: Colors.greenAccent,
-                                    ));
+                                  animation: controller,
+                                  backgroundColor: Colors.white,
+                                  color: Colors.greenAccent,
+                                ));
                               },
                             ),
                           ),
@@ -183,6 +195,39 @@ class TimerScreenState extends State<TimerScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
+                      //prev sound
+                      RawMaterialButton(
+                        onPressed: () {
+                          setState(() {
+                            if (getCurrentMusicPosition() > 0) {
+                              Home.currentMusic =
+                              musicList[getCurrentMusicPosition() - 1];
+                            } else {
+                              Home.currentMusic = musicList[musicList.length - 1];
+                            }
+                            HomeState().stopSound();
+                            HomeState().playSound();
+                            Home.isMusicPlaying = true;
+                          });
+                        },
+                        elevation: 20.0,
+                        shape: CircleBorder(),
+                        child: new Icon(
+                          Icons.skip_previous,
+                          size: 40.0,
+                        ),
+//                    child: Container(
+//                        width: 80.0,
+//                        height: 80.0,
+//                        child: Center(
+//                            child: AnimatedIcon(
+//                          icon: AnimatedIcons.play_pause,
+//                          progress: controller.view,
+//                          color: Colors.white,
+//                          size: 50,
+//                        ))),
+                        fillColor: Colors.white54,
+                      ),
                       FloatingActionButton(
                         backgroundColor: Colors.green,
                         child: AnimatedBuilder(
@@ -215,7 +260,40 @@ class TimerScreenState extends State<TimerScreen>
                             });
                           }
                         },
-                      )
+                      ),
+                      //next sound
+                      RawMaterialButton(
+                        onPressed: () {
+                          setState(() {
+                            if (getCurrentMusicPosition() < musicList.length - 1) {
+                              Home.currentMusic =
+                              musicList[getCurrentMusicPosition() + 1];
+                            } else {
+                              Home.currentMusic = musicList[0];
+                            }
+                            HomeState().stopSound();
+                            HomeState().playSound();
+                            Home.isMusicPlaying = true;
+                          });
+                        },
+                        elevation: 20.0,
+                        shape: CircleBorder(),
+                        child: new Icon(
+                          Icons.skip_next,
+                          size: 40.0,
+                        ),
+//                    child: Container(
+//                        width: 80.0,
+//                        height: 80.0,
+//                        child: Center(
+//                            child: AnimatedIcon(
+//                          icon: AnimatedIcons.play_pause,
+//                          progress: controller.view,
+//                          color: Colors.white,
+//                          size: 50,
+//                        ))),
+                        fillColor: Colors.white54,
+                      ),
                     ],
                   ),
                 ),
@@ -229,10 +307,15 @@ class TimerScreenState extends State<TimerScreen>
             top: 50,
             right: 16,
             child: IconButton(
-              icon: Icon(Icons.help_outline,color: Colors.white,),
+              icon: Icon(
+                Icons.help_outline,
+                color: Colors.white,
+              ),
               onPressed: () {
-                final snackBar = SnackBar(content: Text("Leaving this page will turn off the timer"),
-                  action: SnackBarAction(label: "OK", onPressed: () {}),);
+                final snackBar = SnackBar(
+                  content: Text("Leaving this page will turn off the timer"),
+                  action: SnackBarAction(label: "OK", onPressed: () {}),
+                );
                 Scaffold.of(context).showSnackBar(snackBar);
               },
             ),
@@ -263,11 +346,11 @@ class TimerScreenState extends State<TimerScreen>
             filter: ImageFilter.blur(sigmaY: 10, sigmaX: 10),
             child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [Color(0x50000000), Color(0xA0000000)],
-                      begin: FractionalOffset.topLeft,
-                      end: FractionalOffset.bottomRight),
-                )),
+              gradient: LinearGradient(
+                  colors: [Color(0x50000000), Color(0xA0000000)],
+                  begin: FractionalOffset.topLeft,
+                  end: FractionalOffset.bottomRight),
+            )),
           ),
           Center(
             child: Padding(

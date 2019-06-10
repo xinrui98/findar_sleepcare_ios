@@ -48,6 +48,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   List pages;
   final PageStorageBucket bucket = PageStorageBucket();
 
+  static Timer timerOfSongLooping;
 
   void playSound() {
     soundManager.playLocal((Home.currentMusic != null) ? Home.currentMusic.musicUri.substring(7) : MusicRepo().musicList[0].musicUri.substring(7));
@@ -59,6 +60,17 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   void stopSound() {
     soundManager.stop();
+  }
+
+  //loop song
+  setTimerOfSongLooping(int secondsInSong) {
+    timerOfSongLooping = Timer.periodic(Duration(seconds: secondsInSong), (Timer t){
+      HomeState().stopSound();
+      HomeState().playSound();
+    });
+    return timerOfSongLooping;
+    // and later, before the timer goes off...
+//    t.cancel();
   }
 
   @override

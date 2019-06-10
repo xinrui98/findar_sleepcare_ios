@@ -163,6 +163,12 @@ class AllMusicScreenState extends State<AllMusicScreen> with SingleTickerProvide
                                               HomeState().stopSound();
                                               HomeState().playSound();
                                               Home.isMusicPlaying = true;
+                                              //cancel previous song looping if timerOfSongLooping !=null
+                                              if(HomeState.timerOfSongLooping!=null) {
+                                                HomeState.timerOfSongLooping.cancel();
+                                              }
+                                              //loop song
+                                              HomeState().setTimerOfSongLooping(musicList[index].durationSeconds);
                                             });
                                           },
                                         ),

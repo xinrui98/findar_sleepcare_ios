@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'main.dart';
@@ -25,6 +26,8 @@ class MainScreenState extends State<MainScreen>
   final _scaffoldKey = new GlobalKey<ScaffoldState>();
   var sliderValue = 0.0;
 
+  Timer timerOfSongLooping;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -32,6 +35,7 @@ class MainScreenState extends State<MainScreen>
     controller =
         AnimationController(vsync: this, duration: Duration(milliseconds: 0));
     animation = CurvedAnimation(parent: controller, curve: Curves.easeIn);
+
   }
 
   @override
@@ -57,6 +61,16 @@ class MainScreenState extends State<MainScreen>
         return 0;
       }
     }
+  }
+  //loop song
+  setTimerOfSongLooping(int secondsInSong) {
+    timerOfSongLooping = Timer.periodic(Duration(seconds: secondsInSong), (Timer t){
+      HomeState().stopSound();
+      HomeState().playSound();
+    });
+    return timerOfSongLooping;
+    // and later, before the timer goes off...
+//    t.cancel();
   }
 
   @override
@@ -136,8 +150,14 @@ class MainScreenState extends State<MainScreen>
                         } else {
                           Home.currentMusic = musicList[musicList.length - 1];
                         }
+                        if(timerOfSongLooping!=null) {
+                          //cancel song looping if timerOfSongLooping !=null
+                          timerOfSongLooping.cancel();
+                        }
                         HomeState().stopSound();
                         HomeState().playSound();
+                        //loop song
+                        setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
                         Home.isMusicPlaying = true;
                       });
                     },
@@ -166,6 +186,8 @@ class MainScreenState extends State<MainScreen>
                         setState(() {
                           HomeState().playSound();
                           Home.isMusicPlaying = true;
+                          //loop song
+                          setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
                         });
                       } else if (Home.isMusicPlaying == false) {
                         setState(() {
@@ -174,6 +196,10 @@ class MainScreenState extends State<MainScreen>
                           //toggles to PLAY button, when sound is paused
                           HomeState().pauseSound();
                           Home.isMusicPlaying = false;
+                          if(timerOfSongLooping!=null) {
+                            //cancel song looping if timerOfSongLooping !=null
+                            timerOfSongLooping.cancel();
+                          }
                         });
                       }
 //                      setState(() {
@@ -220,6 +246,12 @@ class MainScreenState extends State<MainScreen>
                         HomeState().stopSound();
                         HomeState().playSound();
                         Home.isMusicPlaying = true;
+                        if(timerOfSongLooping!=null) {
+                          //cancel previous song looping if timerOfSongLooping !=null
+                          timerOfSongLooping.cancel();
+                        }
+                        //loop song
+                        setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
                       });
                     },
                     elevation: 20.0,

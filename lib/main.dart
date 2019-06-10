@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -48,7 +49,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   final PageStorageBucket bucket = PageStorageBucket();
 
 
-
   void playSound() {
     soundManager.playLocal((Home.currentMusic != null) ? Home.currentMusic.musicUri.substring(7) : MusicRepo().musicList[0].musicUri.substring(7));
   }
@@ -60,7 +60,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   void stopSound() {
     soundManager.stop();
   }
-
 
   @override
   void initState() {

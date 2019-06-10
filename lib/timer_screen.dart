@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 //import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:math' as math;
 import 'main.dart';
+import 'main_screen.dart';
 import 'music_repo.dart';
 import 'package:flutter_duration_picker/flutter_duration_picker.dart';
 
@@ -25,6 +26,7 @@ class TimerScreenState extends State<TimerScreen>
   bool startedTimer = false;
   bool initalizedTimer = true;
   Duration duration;
+
 
   String get timerString {
     duration = controller.duration * controller.value;
@@ -208,6 +210,12 @@ class TimerScreenState extends State<TimerScreen>
                             HomeState().stopSound();
                             HomeState().playSound();
                             Home.isMusicPlaying = true;
+                            //cancel song looping if timerOfSongLooping !=null
+                            if(MainScreenState().timerOfSongLooping!=null) {
+                              MainScreenState().timerOfSongLooping.cancel();
+                            }
+                            //set song to looping
+                            MainScreenState().setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
                           });
                         },
                         elevation: 20.0,
@@ -247,6 +255,10 @@ class TimerScreenState extends State<TimerScreen>
                               HomeState.isTimerRunning = false;
                               HomeState().pauseSound();
                               Home.isMusicPlaying = false;
+                              //cancel song looping if timerOfSongLooping !=null
+                              if(MainScreenState().timerOfSongLooping!=null) {
+                                MainScreenState().timerOfSongLooping.cancel();
+                              }
                             });
                           } else {
                             controller.reverse(
@@ -257,6 +269,14 @@ class TimerScreenState extends State<TimerScreen>
                               isAnimating = true;
                               Home.isMusicPlaying = true;
                               HomeState().playSound();
+                              //cancel song looping if timerOfSongLooping !=null
+                              if(MainScreenState().timerOfSongLooping!=null) {
+                                MainScreenState().timerOfSongLooping.cancel();
+                                print("timer of song looping is cancelled");
+                              }
+                              //set song to looping
+                              MainScreenState().setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
+
                             });
                           }
                         },
@@ -274,6 +294,12 @@ class TimerScreenState extends State<TimerScreen>
                             HomeState().stopSound();
                             HomeState().playSound();
                             Home.isMusicPlaying = true;
+                            //cancel song looping if timerOfSongLooping !=null
+                            if(MainScreenState().timerOfSongLooping!=null) {
+                              MainScreenState().timerOfSongLooping.cancel();
+                            }
+                            //set song to looping
+                            MainScreenState().setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
                           });
                         },
                         elevation: 20.0,

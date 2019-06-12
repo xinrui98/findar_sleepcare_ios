@@ -78,7 +78,6 @@
 				67B453F3EE9FBECEDD0C0BD2 /* Pods-Runner.release.xcconfig */,
 				AD3C52126043412DB3ADBCD3 /* Pods-Runner.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -183,6 +182,11 @@
 						CreatedOnToolsVersion = 7.3.1;
 						DevelopmentTeam = 6C5DNF33P2;
 						LastSwiftMigration = 1020;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};

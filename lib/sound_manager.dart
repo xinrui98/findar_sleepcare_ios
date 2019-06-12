@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
+//import 'package:audioplayers/audioplayers.dart';
+
 
 class SoundManager {
   AudioPlayer audioPlayer = new AudioPlayer();

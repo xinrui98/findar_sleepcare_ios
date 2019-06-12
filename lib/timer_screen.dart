@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'dart:math' as math;
 import 'main.dart';
 import 'music_repo.dart';
 import 'package:flutter_duration_picker/flutter_duration_picker.dart';
+import 'package:flutter/services.dart';
 
 class TimerScreen extends StatefulWidget {
   @override
@@ -16,7 +18,10 @@ class TimerScreen extends StatefulWidget {
 }
 
 class TimerScreenState extends State<TimerScreen>
-    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+    with
+        TickerProviderStateMixin,
+        AutomaticKeepAliveClientMixin,
+        WidgetsBindingObserver {
   List musicList = MusicRepo().musicList;
   AnimationController controller;
   bool isAnimating = false;
@@ -25,7 +30,7 @@ class TimerScreenState extends State<TimerScreen>
   bool startedTimer = false;
   bool initalizedTimer = true;
   Duration duration;
-
+  var timerPauseInBackground;
 
   String get timerString {
     duration = controller.duration * controller.value;
@@ -47,6 +52,10 @@ class TimerScreenState extends State<TimerScreen>
   @override
   void initState() {
     super.initState();
+
+    //to run activity in background, state resume, state inactive etc
+    WidgetsBinding.instance.addObserver(this);
+
     duration = Duration(hours: hours, minutes: minutes);
     controller = AnimationController(
       vsync: this,
@@ -59,6 +68,12 @@ class TimerScreenState extends State<TimerScreen>
           isAnimating = false;
         });
         HomeState().pauseSound();
+        Home.isMusicPlaying = false;
+        //cancel song looping if timerOfSongLooping !=null
+        //when timer is up, need to cancel song looping as well as pause sound.
+        if (HomeState.timerOfSongLooping != null) {
+          HomeState.timerOfSongLooping.cancel();
+        }
       }
     });
   }
@@ -70,11 +85,45 @@ class TimerScreenState extends State<TimerScreen>
       return timerSelectionScreen();
   }
 
+  pauseSoundInBackgroundUsingTimer(Duration timeLeft) {
+    return Timer(Duration(seconds: timeLeft.inSeconds), () {
+      HomeState().pauseSound();
+      Home.isMusicPlaying = false;
+      //toggles to PLAY button, when timer and sound is paused
+    });
+    // and later, before the timer goes off...
+//    t.cancel();
+  }
+
   @override
   void dispose() {
+    //to run activity in background, state resume, state inactive etc
+    WidgetsBinding.instance.removeObserver(this);
+
     controller.dispose();
     HomeState.isTimerRunning = false;
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.paused:
+        print("paused state");
+        timerPauseInBackground = pauseSoundInBackgroundUsingTimer(duration);
+        break;
+      case AppLifecycleState.resumed:
+        print("resumed");
+        timerPauseInBackground.cancel();
+        break;
+      case AppLifecycleState.inactive:
+        print("inactive");
+        break;
+      case AppLifecycleState.suspending:
+        print("suspending");
+        break;
+    }
   }
 
   @override
@@ -92,6 +141,7 @@ class TimerScreenState extends State<TimerScreen>
       if (controller.isAnimating) {
         controller.reverse();
         isAnimating = true;
+        Home.isMusicPlaying = true;
         HomeState().playSound();
       }
     });
@@ -202,19 +252,22 @@ class TimerScreenState extends State<TimerScreen>
                           setState(() {
                             if (getCurrentMusicPosition() > 0) {
                               Home.currentMusic =
-                              musicList[getCurrentMusicPosition() - 1];
+                                  musicList[getCurrentMusicPosition() - 1];
                             } else {
-                              Home.currentMusic = musicList[musicList.length - 1];
+                              Home.currentMusic =
+                                  musicList[musicList.length - 1];
                             }
                             HomeState().stopSound();
                             HomeState().playSound();
                             Home.isMusicPlaying = true;
                             //cancel song looping if timerOfSongLooping !=null
-                            if(HomeState.timerOfSongLooping!=null) {
+                            if (HomeState.timerOfSongLooping != null) {
                               HomeState.timerOfSongLooping.cancel();
                             }
                             //set song to looping
-                            HomeState().setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
+                            HomeState().setTimerOfSongLooping(
+                                musicList[getCurrentMusicPosition()]
+                                    .durationSeconds);
                           });
                         },
                         elevation: 20.0,
@@ -246,7 +299,8 @@ class TimerScreenState extends State<TimerScreen>
                           },
                         ),
                         onPressed: () {
-                          print("controller animating ${controller.isAnimating}");
+                          print(
+                              "controller animating ${controller.isAnimating}");
                           if (controller.isAnimating) {
                             controller.stop();
                             setState(() {
@@ -255,7 +309,7 @@ class TimerScreenState extends State<TimerScreen>
                               HomeState().pauseSound();
                               Home.isMusicPlaying = false;
                               //cancel song looping if timerOfSongLooping !=null
-                              if(HomeState.timerOfSongLooping!=null) {
+                              if (HomeState.timerOfSongLooping != null) {
                                 HomeState.timerOfSongLooping.cancel();
                               }
                             });
@@ -269,13 +323,15 @@ class TimerScreenState extends State<TimerScreen>
                               Home.isMusicPlaying = true;
                               HomeState().playSound();
                               //cancel song looping if timerOfSongLooping !=null
-                              if(HomeState.timerOfSongLooping!=null) {
+                              if (HomeState.timerOfSongLooping != null) {
                                 HomeState.timerOfSongLooping.cancel();
-                                print("timer screen : timer of song looping is cancelled");
+                                print(
+                                    "timer screen : timer of song looping is cancelled");
                               }
                               //set song to looping
-                              HomeState().setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
-
+                              HomeState().setTimerOfSongLooping(
+                                  musicList[getCurrentMusicPosition()]
+                                      .durationSeconds);
                             });
                           }
                         },
@@ -284,9 +340,10 @@ class TimerScreenState extends State<TimerScreen>
                       RawMaterialButton(
                         onPressed: () {
                           setState(() {
-                            if (getCurrentMusicPosition() < musicList.length - 1) {
+                            if (getCurrentMusicPosition() <
+                                musicList.length - 1) {
                               Home.currentMusic =
-                              musicList[getCurrentMusicPosition() + 1];
+                                  musicList[getCurrentMusicPosition() + 1];
                             } else {
                               Home.currentMusic = musicList[0];
                             }
@@ -294,11 +351,13 @@ class TimerScreenState extends State<TimerScreen>
                             HomeState().playSound();
                             Home.isMusicPlaying = true;
                             //cancel song looping if timerOfSongLooping !=null
-                            if(HomeState.timerOfSongLooping!=null) {
+                            if (HomeState.timerOfSongLooping != null) {
                               HomeState.timerOfSongLooping.cancel();
                             }
                             //set song to looping
-                            HomeState().setTimerOfSongLooping(musicList[getCurrentMusicPosition()].durationSeconds);
+                            HomeState().setTimerOfSongLooping(
+                                musicList[getCurrentMusicPosition()]
+                                    .durationSeconds);
                           });
                         },
                         elevation: 20.0,
